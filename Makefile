@@ -77,3 +77,21 @@ clean:
 .PHONY: purge
 purge:
 	rm -rf build packer_build packer_cache testinstall-*.img
+
+.PHONY: docker-build
+.ONESHELL:
+docker-build:
+  # docker run --rm -it --privileged -v $(pwd):/vyos -w /vyos vyos/vyos-build:current
+	docker run --rm -it --privileged \
+        -v "$(shell pwd)":/vyos \
+        -w /vyos \
+	      --sysctl net.ipv6.conf.lo.disable_ipv6=0 \
+        -e GOSU_UID=$(id -u) \
+	      -e GOSU_GID=$(id -g) \
+        vyos/vyos-build:sagitta bash -c "\
+				ls -al; \
+		    sudo mount -i -o remount,exec,dev /vyos; \
+		    sudo make iso; \
+		    "
+
+
